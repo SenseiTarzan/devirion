@@ -86,10 +86,10 @@ class DEVirion extends PluginBase{
 		if(count($this->classLoader->getKnownAntigens()) > 0){
 			$this->getLogger()->warning("Virions should be bundled into plugins, not redistributed separately! Do NOT use DEVirion on production servers!!");
 			$this->classLoader->register(true);
-			$size = $this->getServer()->getAsyncPool()->getSize();
-			for($i = 0; $i < $size; $i++){
-				$this->getServer()->getAsyncPool()->submitTaskToWorker(new RegisterClassLoaderAsyncTask($this->classLoader), $i);
-			}
+			$asyncPool = $this->getServer()->getAsyncPool();
+			$asyncPool->addWorkerStartHook(function(int $worker) use($asyncPool) : void{
+				$asyncPool->submitTaskToWorker(new RegisterClassLoaderAsyncTask($this->classLoader), $worker);
+			});
 		}
 	}
 
